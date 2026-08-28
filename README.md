@@ -130,7 +130,54 @@ uv run nwafu-mcp
 
 ## 接入 MCP 客户端
 
-### Claude Desktop（`claude_desktop_config.json`）
+### 魔搭社区（ModelScope）· 可托管部署（推荐）
+
+魔搭要求 STDIO 托管配置中 `command` 只能为 `npx` 或 `uvx`，且只能从
+npm / PyPI 拉取**已发布**的包（不支持 `git+https://` 引用）。本项目发布到
+PyPI 后，`uvx nwafu-mcp` 即可直接启动，魔搭部署检测也会按这份配置执行：
+
+```json
+{
+  "mcpServers": {
+    "nwafu-campus": {
+      "command": "uvx",
+      "args": ["nwafu-mcp"],
+      "env": {
+        "PDQQ_COOKIES": "p_uin=xxx; uuid=xxx; EO-Bot-Js-Token=xxx",
+        "PDQQ_GUILD_ID": "inwafu1934",
+        "PDQQ_CHANNEL_ID": "670126629"
+      }
+    }
+  }
+}
+```
+
+#### 在魔搭创建（最快路径）
+
+1. 先完成「发布到 PyPI」：`cd nwafu-mcp && uv build && uv publish`。
+2. 打开 [创建 MCP 服务](https://modelscope.cn/mcp/servers/create)，
+   保持默认的「从 GitHub 仓库快速创建」。
+3. GitHub 地址填 `https://github.com/unielevotor/nwafu-AgentPlatformMCP`；
+   英文名称填 `nwafu-campus`（与所有者组合成服务 ID）；托管类型选
+   **「可托管部署」**；其余字段默认。
+4. 点击「创建」。平台会自动解析本 README：提取上方 STDIO 配置 →
+   用 `uvx` 从 PyPI 安装 `nwafu-mcp` → 连接并调用 `list_tools` 完成部署检测。
+   通过后服务会带 `可部署` / `hosted` 标签。
+5. 在服务工具页测试 `official_site_recent` 等工具（官网类无需 Cookie 即可返回结果）。
+
+注意事项：
+
+- 服务配置 JSON 不要写注释，`command` 必须是 `uvx`（或 `npx`），
+  `args` 第一项是 PyPI 包提供的命令 `nwafu-mcp`；
+- `PDQQ_COOKIES` 供频道类工具使用（`campus_channel_summary`、
+  `campus_question_search`），未填时这两类工具会返回明确的 Cookie 缺失提示，
+  官网查询类工具不受影响；
+- 需要锁版本时可把 `args` 写成 `["nwafu-mcp==0.1.0"]`（uvx 支持 `包名==版本号`），
+  避免上游更新影响线上环境。
+
+### Claude Desktop / Cursor / Windsurf 等本地客户端
+
+`claude_desktop_config.json` 或 Cursor / Windsurf 的 MCP 配置直接使用同一份配置：
 
 ```json
 {
@@ -146,59 +193,8 @@ uv run nwafu-mcp
 }
 ```
 
-### Cursor / Windsurf / 通用平台（JSON 形式）
-
-```json
-{
-  "mcpServers": {
-    "nwafu-campus": {
-      "command": "uvx",
-      "args": ["nwafu-mcp"],
-      "env": {
-        "PDQQ_COOKIES": "p_uin=xxx; uuid=xxx; EO-Bot-Js-Token=xxx",
-        "PDQQ_GUILD_ID": "inwafu1934",
-        "PDQQ_CHANNEL_ID": "670126629"
-      }
-    }
-  }
-}
-```
-
-> `nwafu-mcp` 已发布到 PyPI，`uvx nwafu-mcp` 会自动下载并运行最新版本；
+> 发布到 PyPI 后，`uvx nwafu-mcp` 会自动下载并运行最新版本；
 > 本地开发时可改用 `uvx --from git+https://github.com/unielevotor/nwafu-AgentPlatformMCP nwafu-mcp`。
-
-### 魔搭社区（ModelScope）部署
-
-魔搭社区的 MCP 托管要求 STDIO 方式、安装命令**只允许 `npx` 或 `uvx`**，
-且只能拉取 npm / PyPI 上已发布的包（不支持 `git+https://` 引用），
-因此本项目发布到 PyPI 后，在魔搭直接配置 `uvx nwafu-mcp` 即可：
-
-```json
-{
-  "mcpServers": {
-    "nwafu-campus": {
-      "command": "uvx",
-      "args": ["nwafu-mcp"],
-      "env": {
-        "PDQQ_COOKIES": "p_uin=xxx; uuid=xxx; EO-Bot-Js-Token=xxx",
-        "PDQQ_GUILD_ID": "inwafu1934",
-        "PDQQ_CHANNEL_ID": "670126629"
-      }
-    }
-  }
-}
-```
-
-注意事项：
-
-- 文件名中 JSON 只能包含**一个** MCP Server，不要写注释；
-- 服务名（如 `nwafu-campus`）可自定义，`command` 必须写 `uvx`（或 `npx`），
-  `args` 第一项是 PyPI 包提供的命令 `nwafu-mcp`；
-- `PDQQ_COOKIES` 为必填（频道类工具需要），否则 `campus_channel_summary`
-  与 `campus_question_search` 会返回 Cookie 缺失提示；官网查询类工具不受影响；
-- 工具默认以 **stdio** 传输启动，恰好符合魔搭 STDIO 托管的要求；
-- 如需锁定版本，可把 args 写成 `["nwafu-mcp==0.1.0"]`（uvx 支持 `包名==版本号`），
-  避免上游更新影响线上环境。
 
 ### 托管模式（远程 HTTP URL，供云端智能体平台使用）
 
