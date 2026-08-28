@@ -172,7 +172,7 @@ PyPI 后，`uvx mcp-for-nwafactivity` 即可直接启动，魔搭部署检测也
 - `PDQQ_COOKIES` 供频道类工具使用（`campus_channel_summary`、
   `campus_question_search`），未填时这两类工具会返回明确的 Cookie 缺失提示，
   官网查询类工具不受影响；
-- 需要锁版本时可把 `args` 写成 `["mcp-for-nwafactivity==0.1.0"]`（uvx 支持 `包名==版本号`），
+- 需要锁版本时可把 `args` 写成 `["mcp-for-nwafactivity==0.1.1"]`（uvx 支持 `包名==版本号`），
   避免上游更新影响线上环境。
 
 ### Claude Desktop / Cursor / Windsurf 等本地客户端

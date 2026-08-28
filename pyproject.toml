@@ -1,6 +1,6 @@
 [project]
 name = "mcp-for-nwafactivity"
-version = "0.1.0"
+version = "0.1.1"
 description = "西北农林科技大学校园信息 MCP 工具集：QQ 校园频道热门总结、官网通知/活动/竞赛查询、跨站自定义检索"
 readme = "README.md"
 requires-python = ">=3.10"
