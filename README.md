@@ -137,11 +137,7 @@ uv run nwafu-mcp
   "mcpServers": {
     "nwafu-campus": {
       "command": "uvx",
-      "args": [
-        "--from",
-        "git+https://github.com/unielevotor/nwafu-AgentPlatformMCP",
-        "nwafu-mcp"
-      ],
+      "args": ["nwafu-mcp"],
       "env": {
         "PDQQ_COOKIES": "p_uin=xxx; uuid=xxx; EO-Bot-Js-Token=xxx"
       }
@@ -157,7 +153,7 @@ uv run nwafu-mcp
   "mcpServers": {
     "nwafu-campus": {
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/unielevotor/nwafu-AgentPlatformMCP", "nwafu-mcp"],
+      "args": ["nwafu-mcp"],
       "env": {
         "PDQQ_COOKIES": "p_uin=xxx; uuid=xxx; EO-Bot-Js-Token=xxx",
         "PDQQ_GUILD_ID": "inwafu1934",
@@ -168,8 +164,41 @@ uv run nwafu-mcp
 }
 ```
 
-也可用 `pip install git+https://github.com/unielevotor/nwafu-AgentPlatformMCP` 安装后，
-以 `nwafu-mcp` 命令直接启动。
+> `nwafu-mcp` 已发布到 PyPI，`uvx nwafu-mcp` 会自动下载并运行最新版本；
+> 本地开发时可改用 `uvx --from git+https://github.com/unielevotor/nwafu-AgentPlatformMCP nwafu-mcp`。
+
+### 魔搭社区（ModelScope）部署
+
+魔搭社区的 MCP 托管要求 STDIO 方式、安装命令**只允许 `npx` 或 `uvx`**，
+且只能拉取 npm / PyPI 上已发布的包（不支持 `git+https://` 引用），
+因此本项目发布到 PyPI 后，在魔搭直接配置 `uvx nwafu-mcp` 即可：
+
+```json
+{
+  "mcpServers": {
+    "nwafu-campus": {
+      "command": "uvx",
+      "args": ["nwafu-mcp"],
+      "env": {
+        "PDQQ_COOKIES": "p_uin=xxx; uuid=xxx; EO-Bot-Js-Token=xxx",
+        "PDQQ_GUILD_ID": "inwafu1934",
+        "PDQQ_CHANNEL_ID": "670126629"
+      }
+    }
+  }
+}
+```
+
+注意事项：
+
+- 文件名中 JSON 只能包含**一个** MCP Server，不要写注释；
+- 服务名（如 `nwafu-campus`）可自定义，`command` 必须写 `uvx`（或 `npx`），
+  `args` 第一项是 PyPI 包提供的命令 `nwafu-mcp`；
+- `PDQQ_COOKIES` 为必填（频道类工具需要），否则 `campus_channel_summary`
+  与 `campus_question_search` 会返回 Cookie 缺失提示；官网查询类工具不受影响；
+- 工具默认以 **stdio** 传输启动，恰好符合魔搭 STDIO 托管的要求；
+- 如需锁定版本，可把 args 写成 `["nwafu-mcp==0.1.0"]`（uvx 支持 `包名==版本号`），
+  避免上游更新影响线上环境。
 
 ### 托管模式（远程 HTTP URL，供云端智能体平台使用）
 
@@ -252,18 +281,27 @@ docker run -d --name nwafu-mcp -p 8000:8000 \
 
 ---
 
-## GitHub 部署步骤
+## 发布与部署步骤
 
-1. 推送到 GitHub 仓库（`unielevotor/nwafu-AgentPlatformMCP`）：
+### 1. 推送到 GitHub 仓库（`unielevotor/nwafu-AgentPlatformMCP`）
 
 ```bash
 git remote add origin https://github.com/unielevotor/nwafu-AgentPlatformMCP.git
 git push -u origin main
 ```
 
-2. 确认仓库为 **Public**（私有仓库时，目标智能体平台需能访问 GitHub 凭据）。
-3. 在智能体平台的 MCP 配置中填入上面的 `uvx --from git+...` 启动命令，
-   并注入 `PDQQ_COOKIES` 等环境变量。
+确认仓库为 **Public**，并打 tag / 发 Release 提升可信度。
+
+### 2. 发布到 PyPI（魔搭 `uvx` 拉取依赖此步）
+
+```bash
+cd nwafu-mcp
+uv build          # 生成 sdist + wheel（本仓库已配置打包白名单，不会带上 .venv/cookies）
+uv publish        # 需要 PyPI API Token（首次运行会引导输入）
+```
+
+发布成功后，任意平台都可以用 `uvx nwafu-mcp` 直接启动；
+魔搭社区按上面的 JSON 配置即可。
 
 ---
 

@@ -7,11 +7,28 @@ requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "NWAFU MCP Contributors" }]
 keywords = ["mcp", "nwafu", "campus", "agent", "tools"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP",
+]
 dependencies = [
     "mcp>=1.2.0,<2",
     "requests>=2.31.0",
     "uvicorn>=0.29",
 ]
+
+[project.urls]
+Homepage = "https://github.com/unielevotor/nwafu-AgentPlatformMCP"
+Repository = "https://github.com/unielevotor/nwafu-AgentPlatformMCP"
+Documentation = "https://github.com/unielevotor/nwafu-AgentPlatformMCP#readme"
+Issues = "https://github.com/unielevotor/nwafu-AgentPlatformMCP/issues"
 
 [project.optional-dependencies]
 cookies = ["playwright>=1.40"]
@@ -27,6 +44,22 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/nwafu_mcp"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/pyproject.toml",
+    "/README.md",
+    "/LICENSE",
+    "/.env.example",
+    "/src",
+]
+exclude = [
+    "/.venv",
+    "/tests",
+    "/scripts",
+    "/.github",
+    "*.log",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
