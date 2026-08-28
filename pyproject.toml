@@ -1,5 +1,5 @@
 [project]
-name = "nwafu-mcp"
+name = "mcp-for-nwafactivity"
 version = "0.1.0"
 description = "西北农林科技大学校园信息 MCP 工具集：QQ 校园频道热门总结、官网通知/活动/竞赛查询、跨站自定义检索"
 readme = "README.md"
@@ -35,6 +35,8 @@ cookies = ["playwright>=1.40"]
 dev = ["pytest>=8.0"]
 
 [project.scripts]
+mcp-for-nwafactivity = "nwafu_mcp.server:main"
+# 兼容旧命令名（旧包 nwafu-mcp 不再更新）
 nwafu-mcp = "nwafu_mcp.server:main"
 nwafu-export-cookies = "nwafu_mcp.export_cookies:main"
 

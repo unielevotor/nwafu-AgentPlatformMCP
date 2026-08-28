@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """端到端 MCP 协议冒烟测试。
 
-启动 nwafu-mcp stdio server，用官方 mcp 客户端 SDK 连接，列出工具并逐个调用。
+启动 mcp-for-nwafactivity stdio server，用官方 mcp 客户端 SDK 连接，列出工具并逐个调用。
 需要网络与频道 Cookie（NWAFU_COOKIE_FILE 或 PDQQ_COOKIES 环境变量）。
 
 用法：

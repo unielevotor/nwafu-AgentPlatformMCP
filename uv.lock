@@ -615,7 +615,7 @@ wheels = [
 ]
 
 [[package]]
-name = "nwafu-mcp"
+name = "mcp-for-nwafactivity"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

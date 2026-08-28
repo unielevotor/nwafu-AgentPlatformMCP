@@ -8,8 +8,8 @@
   4. campus_question_search  —— 跨"官网 + 校园频道"的自定义问题检索
 
 运行：
-  - 本地模式：`nwafu-mcp`（stdio 传输，适配 Claude Desktop / Cursor 等）
-  - 托管模式：`nwafu-mcp --transport streamable-http --port 8000 --auth-token xxx`
+  - 本地模式：`mcp-for-nwafactivity`（stdio 传输，适配 Claude Desktop / Cursor 等）
+  - 托管模式：`mcp-for-nwafactivity --transport streamable-http --port 8000 --auth-token xxx`
     （Streamable HTTP，可部署到 VPS / Docker / Serverless，供云端智能体平台连接）
 """
 
@@ -425,7 +425,7 @@ def campus_question_search(
 
 def _parse_args(argv=None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog="nwafu-mcp",
+        prog="mcp-for-nwafactivity",
         description="西北农林科技大学校园信息 MCP 服务器（stdio 本地模式 / streamable-http 托管模式）",
     )
     parser.add_argument(
@@ -501,7 +501,7 @@ def _run_http(args: argparse.Namespace) -> None:
 
     async def healthz(request):
         return JSONResponse(
-            {"status": "ok", "service": "nwafu-mcp", "mount_path": args.mount_path}
+            {"status": "ok", "service": "mcp-for-nwafactivity", "mount_path": args.mount_path}
         )
 
     middleware = [
@@ -540,7 +540,7 @@ def _run_http(args: argparse.Namespace) -> None:
         lifespan=lifespan,
     )
     LOG.info(
-        "nwafu-mcp 托管模式启动：http://%s:%s%s（鉴权：%s）",
+        "mcp-for-nwafactivity 托管模式启动：http://%s:%s%s（鉴权：%s）",
         args.host,
         args.port,
         args.mount_path,

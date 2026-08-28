@@ -9,7 +9,7 @@ Cookie 导出为 JSON，供 MCP server（PDQQ_COOKIES / NWAFU_COOKIE_FILE）使�
     nwafu-export-cookies --out cookies.json
     nwafu-export-cookies --guild-id inwafu1934 --channel-id 670126629 --out cookies.json
 
-依赖：pip install "nwafu-mcp[cookies]" 或 pip install playwright
+依赖：pip install "mcp-for-nwafactivity[cookies]" 或 pip install playwright
 """
 
 from __future__ import annotations
@@ -47,7 +47,7 @@ def export(
         from playwright.sync_api import sync_playwright
     except ImportError as e:
         raise SystemExit(
-            "未安装 playwright，请先执行：pip install \"nwafu-mcp[cookies]\""
+            "未安装 playwright，请先执行：pip install \"mcp-for-nwafactivity[cookies]\""
             " 或 pip install playwright"
         ) from e
 

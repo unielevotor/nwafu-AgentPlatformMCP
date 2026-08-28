@@ -1,4 +1,4 @@
-# nwafu-mcp · 西北农林科技大学校园信息 MCP 工具集
+# mcp-for-nwafactivity · 西北农林科技大学校园信息 MCP 工具集
 
 为部署在任意智能体平台上的 Agent 提供一套符合 [MCP 协议](https://modelcontextprotocol.io)
 的工具，覆盖三个核心能力：
@@ -123,7 +123,7 @@ print(official_site_recent(category='通知', keyword='植保学院'))
 ### 3. 以 MCP Server 方式运行
 
 ```powershell
-uv run nwafu-mcp
+uv run mcp-for-nwafactivity
 ```
 
 ---
@@ -134,14 +134,14 @@ uv run nwafu-mcp
 
 魔搭要求 STDIO 托管配置中 `command` 只能为 `npx` 或 `uvx`，且只能从
 npm / PyPI 拉取**已发布**的包（不支持 `git+https://` 引用）。本项目发布到
-PyPI 后，`uvx nwafu-mcp` 即可直接启动，魔搭部署检测也会按这份配置执行：
+PyPI 后，`uvx mcp-for-nwafactivity` 即可直接启动，魔搭部署检测也会按这份配置执行：
 
 ```json
 {
   "mcpServers": {
     "nwafu-campus": {
       "command": "uvx",
-      "args": ["nwafu-mcp"],
+      "args": ["mcp-for-nwafactivity"],
       "env": {
         "PDQQ_COOKIES": "p_uin=xxx; uuid=xxx; EO-Bot-Js-Token=xxx",
         "PDQQ_GUILD_ID": "inwafu1934",
@@ -161,18 +161,18 @@ PyPI 后，`uvx nwafu-mcp` 即可直接启动，魔搭部署检测也会按这�
    英文名称填 `nwafu-campus`（与所有者组合成服务 ID）；托管类型选
    **「可托管部署」**；其余字段默认。
 4. 点击「创建」。平台会自动解析本 README：提取上方 STDIO 配置 →
-   用 `uvx` 从 PyPI 安装 `nwafu-mcp` → 连接并调用 `list_tools` 完成部署检测。
+   用 `uvx` 从 PyPI 安装 `mcp-for-nwafactivity` → 连接并调用 `list_tools` 完成部署检测。
    通过后服务会带 `可部署` / `hosted` 标签。
 5. 在服务工具页测试 `official_site_recent` 等工具（官网类无需 Cookie 即可返回结果）。
 
 注意事项：
 
 - 服务配置 JSON 不要写注释，`command` 必须是 `uvx`（或 `npx`），
-  `args` 第一项是 PyPI 包提供的命令 `nwafu-mcp`；
+  `args` 第一项是 PyPI 包提供的命令 `mcp-for-nwafactivity`；
 - `PDQQ_COOKIES` 供频道类工具使用（`campus_channel_summary`、
   `campus_question_search`），未填时这两类工具会返回明确的 Cookie 缺失提示，
   官网查询类工具不受影响；
-- 需要锁版本时可把 `args` 写成 `["nwafu-mcp==0.1.0"]`（uvx 支持 `包名==版本号`），
+- 需要锁版本时可把 `args` 写成 `["mcp-for-nwafactivity==0.1.0"]`（uvx 支持 `包名==版本号`），
   避免上游更新影响线上环境。
 
 ### Claude Desktop / Cursor / Windsurf 等本地客户端
@@ -184,7 +184,7 @@ PyPI 后，`uvx nwafu-mcp` 即可直接启动，魔搭部署检测也会按这�
   "mcpServers": {
     "nwafu-campus": {
       "command": "uvx",
-      "args": ["nwafu-mcp"],
+      "args": ["mcp-for-nwafactivity"],
       "env": {
         "PDQQ_COOKIES": "p_uin=xxx; uuid=xxx; EO-Bot-Js-Token=xxx"
       }
@@ -193,8 +193,8 @@ PyPI 后，`uvx nwafu-mcp` 即可直接启动，魔搭部署检测也会按这�
 }
 ```
 
-> 发布到 PyPI 后，`uvx nwafu-mcp` 会自动下载并运行最新版本；
-> 本地开发时可改用 `uvx --from git+https://github.com/unielevotor/nwafu-AgentPlatformMCP nwafu-mcp`。
+> 发布到 PyPI 后，`uvx mcp-for-nwafactivity` 会自动下载并运行最新版本；
+> 本地开发时可改用 `uvx --from git+https://github.com/unielevotor/nwafu-AgentPlatformMCP mcp-for-nwafactivity`。
 
 ### 托管模式（远程 HTTP URL，供云端智能体平台使用）
 
@@ -226,7 +226,7 @@ PyPI 后，`uvx nwafu-mcp` 即可直接启动，魔搭部署检测也会按这�
 
 ```powershell
 $env:NWAFU_MCP_AUTH_TOKEN = "换成随机长令牌"
-uv run nwafu-mcp --transport streamable-http --host 0.0.0.0 --port 8000 --mount-path /mcp
+uv run mcp-for-nwafactivity --transport streamable-http --host 0.0.0.0 --port 8000 --mount-path /mcp
 ```
 
 也可以全用环境变量（适合容器/平台注入）：
@@ -237,7 +237,7 @@ $env:NWAFU_MCP_HOST = "0.0.0.0"
 $env:NWAFU_MCP_PORT = "8000"
 $env:NWAFU_MCP_MOUNT_PATH = "/mcp"
 $env:NWAFU_MCP_AUTH_TOKEN = "换成随机长令牌"
-uv run nwafu-mcp
+uv run mcp-for-nwafactivity
 ```
 
 启动后：
@@ -248,11 +248,11 @@ uv run nwafu-mcp
 ### 2. Docker 部署
 
 ```bash
-docker build -t nwafu-mcp .
-docker run -d --name nwafu-mcp -p 8000:8000 \
+docker build -t mcp-for-nwafactivity .
+docker run -d --name mcp-for-nwafactivity -p 8000:8000 \
   -e NWAFU_MCP_AUTH_TOKEN="换成随机长令牌" \
   -e PDQQ_COOKIES="p_uin=xxx; uuid=xxx; EO-Bot-Js-Token=xxx" \
-  nwafu-mcp
+  mcp-for-nwafactivity
 ```
 
 镜像内默认以 `streamable-http` 模式监听 `0.0.0.0:8000`。
@@ -296,7 +296,7 @@ uv build          # 生成 sdist + wheel（本仓库已配置打包白名单，�
 uv publish        # 需要 PyPI API Token（首次运行会引导输入）
 ```
 
-发布成功后，任意平台都可以用 `uvx nwafu-mcp` 直接启动；
+发布成功后，任意平台都可以用 `uvx mcp-for-nwafactivity` 直接启动；
 魔搭社区按上面的 JSON 配置即可。
 
 ---
