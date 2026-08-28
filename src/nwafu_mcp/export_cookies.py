@@ -91,15 +91,32 @@ def export(
                 pass
             time.sleep(3)
 
-            keep = []
-            for c in context.cookies():
-                if c["name"] in IDENTITY_COOKIES and c.get("value"):
-                    keep.append(f"{c['name']}={c['value']}")
-            cookie_str = "; ".join(keep)
+            def collect() -> list:
+                found = {}
+                for c in context.cookies():
+                    if c["name"] in IDENTITY_COOKIES and c.get("value"):
+                        found[c["name"]] = c["value"]
+                return [f"{name}={found[name]}" for name in IDENTITY_COOKIES if name in found]
+
+            # EO-Bot-Js-Token 由页面 JS 在加载过程中下发，可能稍晚出现；
+            # 最多等待 45 秒，尽量把三个关键 Cookie 等齐。
+            parts = collect()
+            deadline = time.time() + 45
+            while len(parts) < len(IDENTITY_COOKIES) and time.time() < deadline:
+                time.sleep(3)
+                parts = collect()
+
+            cookie_str = "; ".join(parts)
             if not cookie_str:
                 raise SystemExit(
                     "未获取到关键 Cookie（p_uin/uuid/EO-Bot-Js-Token）。"
                     "可能被风控拦截，可加 --headed 手动完成验证后重试。"
+                )
+            if len(parts) < len(IDENTITY_COOKIES):
+                missing = [n for n in IDENTITY_COOKIES if n not in cookie_str]
+                print(
+                    f"警告：以下 Cookie 未获取到（{'，'.join(missing)}）。"
+                    "热评接口可能不可用；可加 --headed 手动完成验证后重试。"
                 )
             _cookie_str_to_file(cookie_str, out)
             return cookie_str
