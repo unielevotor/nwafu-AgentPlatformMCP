@@ -1,4 +1,29 @@
-from nwafu_mcp.server import _derive_keywords, _match_channel_items
+from nwafu_mcp.server import _derive_keywords, _match_channel_items, _parse_args
+
+
+def test_parse_args_defaults():
+    args = _parse_args([])
+    assert args.transport == "stdio"
+    assert args.port == 8000
+    assert args.mount_path == "/mcp"
+    assert args.auth_token == ""
+
+
+def test_parse_args_cli_and_env(monkeypatch):
+    monkeypatch.setenv("NWAFU_MCP_AUTH_TOKEN", "secret-token")
+    args = _parse_args(
+        ["--transport", "streamable-http", "--port", "9000", "--mount-path", "/api/mcp"]
+    )
+    assert args.transport == "streamable-http"
+    assert args.port == 9000
+    assert args.mount_path == "/api/mcp"
+    assert args.auth_token == "secret-token"
+
+
+def test_parse_args_env_transport(monkeypatch):
+    monkeypatch.setenv("NWAFU_MCP_TRANSPORT", "streamable-http")
+    args = _parse_args([])
+    assert args.transport == "streamable-http"
 
 
 def test_derive_keywords_scholarship():

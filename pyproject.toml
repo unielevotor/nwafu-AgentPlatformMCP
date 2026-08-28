@@ -10,6 +10,7 @@ keywords = ["mcp", "nwafu", "campus", "agent", "tools"]
 dependencies = [
     "mcp>=1.2.0,<2",
     "requests>=2.31.0",
+    "uvicorn>=0.29",
 ]
 
 [project.optional-dependencies]

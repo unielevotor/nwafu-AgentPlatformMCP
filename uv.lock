@@ -621,6 +621,7 @@ source = { editable = "." }
 dependencies = [
     { name = "mcp" },
     { name = "requests" },
+    { name = "uvicorn" },
 ]
 
 [package.optional-dependencies]
@@ -637,6 +638,7 @@ requires-dist = [
     { name = "playwright", marker = "extra == 'cookies'", specifier = ">=1.40" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "requests", specifier = ">=2.31.0" },
+    { name = "uvicorn", specifier = ">=0.29" },
 ]
 provides-extras = ["cookies", "dev"]
 

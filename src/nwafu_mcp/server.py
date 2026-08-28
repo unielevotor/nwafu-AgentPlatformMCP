@@ -7,12 +7,19 @@
   3. official_site_search    —— 官网全文检索（自定义关键词）
   4. campus_question_search  —— 跨"官网 + 校园频道"的自定义问题检索
 
-运行：`nwafu-mcp`（stdio 传输，适配 Claude Desktop / Cursor / 各类 MCP 客户端）
+运行：
+  - 本地模式：`nwafu-mcp`（stdio 传输，适配 Claude Desktop / Cursor 等）
+  - 托管模式：`nwafu-mcp --transport streamable-http --port 8000 --auth-token xxx`
+    （Streamable HTTP，可部署到 VPS / Docker / Serverless，供云端智能体平台连接）
 """
 
 from __future__ import annotations
 
+import argparse
+import contextlib
+import hmac
 import logging
+import os
 import re
 from typing import List
 
@@ -416,12 +423,142 @@ def campus_question_search(
         return f"⚠️ 综合检索失败：{e}\n\n请稍后重试，或检查网络连接。"
 
 
-def main() -> None:
+def _parse_args(argv=None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        prog="nwafu-mcp",
+        description="西北农林科技大学校园信息 MCP 服务器（stdio 本地模式 / streamable-http 托管模式）",
+    )
+    parser.add_argument(
+        "--transport",
+        choices=["stdio", "streamable-http"],
+        default=os.environ.get("NWAFU_MCP_TRANSPORT", "stdio"),
+        help="传输方式：stdio=本地子进程（默认）；streamable-http=远程托管",
+    )
+    parser.add_argument(
+        "--host",
+        default=os.environ.get("NWAFU_MCP_HOST", "0.0.0.0"),
+        help="HTTP 监听地址（默认 0.0.0.0）",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=int(os.environ.get("NWAFU_MCP_PORT", "8000")),
+        help="HTTP 监听端口（默认 8000）",
+    )
+    parser.add_argument(
+        "--mount-path",
+        default=os.environ.get("NWAFU_MCP_MOUNT_PATH", "/mcp"),
+        help="MCP 端点路径（默认 /mcp）",
+    )
+    parser.add_argument(
+        "--auth-token",
+        default=os.environ.get("NWAFU_MCP_AUTH_TOKEN", ""),
+        help="Bearer 鉴权令牌；留空则不鉴权（仅建议内网/测试环境）",
+    )
+    parser.add_argument(
+        "--stateless",
+        action="store_true",
+        default=os.environ.get("NWAFU_MCP_STATELESS", "").lower() in ("1", "true", "yes"),
+        help="无状态模式（适合 Serverless 部署）",
+    )
+    return parser.parse_args(argv)
+
+
+class BearerTokenMiddleware:
+    """简单的 Bearer Token 鉴权中间件（ASGI）。"""
+
+    def __init__(self, app, token: str) -> None:
+        self.app = app
+        self.expected = f"Bearer {token}".encode("utf-8")
+
+    async def __call__(self, scope, receive, send) -> None:
+        if scope["type"] != "http" or scope.get("path") == "/healthz":
+            await self.app(scope, receive, send)
+            return
+        headers = dict(scope.get("headers") or [])
+        auth = headers.get(b"authorization", b"")
+        if not auth or not hmac.compare_digest(auth, self.expected):
+            from starlette.responses import JSONResponse
+
+            resp = JSONResponse({"error": "unauthorized", "message": "缺少或无效的 Bearer Token"}, status_code=401)
+            await resp(scope, receive, send)
+            return
+        await self.app(scope, receive, send)
+
+
+def _run_http(args: argparse.Namespace) -> None:
+    from starlette.applications import Starlette
+    from starlette.middleware import Middleware
+    from starlette.middleware.cors import CORSMiddleware
+    from starlette.responses import JSONResponse
+    from starlette.routing import Mount, Route
+    import uvicorn
+
+    mcp.settings.host = args.host
+    mcp.settings.port = args.port
+    mcp.settings.streamable_http_path = args.mount_path
+    mcp.settings.stateless_http = args.stateless
+
+    async def healthz(request):
+        return JSONResponse(
+            {"status": "ok", "service": "nwafu-mcp", "mount_path": args.mount_path}
+        )
+
+    middleware = [
+        Middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_methods=["*"],
+            allow_headers=["*"],
+            expose_headers=["*"],
+        )
+    ]
+    if args.auth_token:
+        middleware.append(Middleware(BearerTokenMiddleware, token=args.auth_token))
+
+    inner = mcp.streamable_http_app()
+    # Starlette 的 Mount 不会运行子应用 lifespan，这里手动接管会话管理器
+    # 的生命周期（task group 初始化），否则请求会报
+    # "Task group is not initialized"。
+    session_manager = getattr(mcp, "_session_manager", None)
+    lifespan = None
+    if session_manager is not None and hasattr(session_manager, "run"):
+
+        @contextlib.asynccontextmanager
+        async def _lifespan(app):
+            async with session_manager.run():
+                yield
+
+        lifespan = _lifespan
+
+    app = Starlette(
+        routes=[
+            Route("/healthz", healthz),
+            Mount("/", app=inner),
+        ],
+        middleware=middleware,
+        lifespan=lifespan,
+    )
+    LOG.info(
+        "nwafu-mcp 托管模式启动：http://%s:%s%s（鉴权：%s）",
+        args.host,
+        args.port,
+        args.mount_path,
+        "已开启" if args.auth_token else "未开启（仅建议内网/测试）",
+    )
+    uvicorn.run(app, host=args.host, port=args.port, log_level="info")
+
+
+def main(argv=None) -> None:
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
-    mcp.run(transport="stdio")
+    args = _parse_args(argv)
+    if args.transport == "streamable-http":
+        _run_http(args)
+    else:
+        mcp.run(transport="stdio")
 
 
 if __name__ == "__main__":
