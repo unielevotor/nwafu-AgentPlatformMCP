@@ -10,7 +10,7 @@ pytest-cache-files-*/
 
 # 环境与密钥
 .env
-cookies.json
+cookies*.json
 *.cookie
 *.log
 
